@@ -1,3 +1,8 @@
 .vercel
 config.js
 .DS_Store
+node_modules
+dist
+.env
+.env.local
+.env.*.local

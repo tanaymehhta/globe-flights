@@ -1,6 +1,10 @@
 import * as THREE from "three";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js";
-import { CONFIG } from "./config.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+// Get API key from environment variable (injected at build time by Vite)
+const CONFIG = {
+  OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || ""
+};
 
 const canvas = document.getElementById("globe");
 const statusEl = document.getElementById("status");
