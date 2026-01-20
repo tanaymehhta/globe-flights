@@ -30,6 +30,19 @@
       </div>
     </div>
     <canvas id="globe"></canvas>
+    
+    <div id="chatbox" class="chatbox">
+      <div class="chatbox-header">
+        <span>War Room</span>
+        <button id="chatbox-toggle" type="button">−</button>
+      </div>
+      <div id="chat-log" class="chat-log"></div>
+      <form id="attack-form" autocomplete="off">
+        <input id="attack-input" type="text" placeholder="e.g. USA attacks Russia" />
+        <button type="submit">Attack</button>
+      </form>
+    </div>
+
     <script type="module" src="/main.js"></script>
   </body>
 </html>
