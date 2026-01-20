@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Globe Flights</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="ui">
+      <div class="brand">Globe Flights</div>
+      <form id="city-form" autocomplete="off">
+        <div class="input-wrapper">
+          <input
+            id="city-input"
+            type="text"
+            placeholder="Search for a city…"
+            aria-label="City name"
+            autocomplete="off"
+          />
+          <ul id="suggestions" class="suggestions"></ul>
+        </div>
+        <button type="submit">Fly</button>
+      </form>
+      <div id="status" class="status">Start anywhere.</div>
+      <div class="speed-controls">
+        <button id="speed-down" type="button" aria-label="Decrease speed">−</button>
+        <span id="speed-display">1.0x</span>
+        <button id="speed-up" type="button" aria-label="Increase speed">+</button>
+      </div>
+    </div>
+    <canvas id="globe"></canvas>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
