@@ -1,11 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-// Get API key from environment variable (injected at build time by Vite)
-const CONFIG = {
-  OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || ""
-};
-
 const canvas = document.getElementById("globe");
 const statusEl = document.getElementById("status");
 const form = document.getElementById("city-form");
@@ -1686,46 +1681,23 @@ if (speedDownBtn) {
 // Chatbox DOM elements
 const chatbox = document.getElementById("chatbox");
 const chatboxToggle = document.getElementById("chatbox-toggle");
-const apiKeySection = document.getElementById("api-key-section");
-const apiKeyInput = document.getElementById("api-key-input");
-const saveApiKeyBtn = document.getElementById("save-api-key");
 const chatLog = document.getElementById("chat-log");
 const attackForm = document.getElementById("attack-form");
 const attackInput = document.getElementById("attack-input");
 const attackSubmitBtn = attackForm?.querySelector("button");
 
-// API key storage
-let openaiApiKey = localStorage.getItem("openai_api_key") || CONFIG.OPENAI_API_KEY || "";
-
 // Initialize chatbox state
 function initChatbox() {
-  if (openaiApiKey) {
-    apiKeySection.classList.add("hidden");
-    attackInput.disabled = false;
-    attackSubmitBtn.disabled = false;
-    addChatMessage("API key loaded. Ready for commands.", "system");
-  }
+  // Enable attack form - API key is handled server-side
+  if (attackInput) attackInput.disabled = false;
+  if (attackSubmitBtn) attackSubmitBtn.disabled = false;
+  addChatMessage("War Room ready. Enter attack commands.", "system");
 }
 
 // Toggle chatbox collapse
 chatboxToggle?.addEventListener("click", () => {
   chatbox.classList.toggle("collapsed");
   chatboxToggle.textContent = chatbox.classList.contains("collapsed") ? "+" : "−";
-});
-
-// Save API key
-saveApiKeyBtn?.addEventListener("click", () => {
-  const key = apiKeyInput.value.trim();
-  if (key && key.startsWith("sk-")) {
-    openaiApiKey = key;
-    localStorage.setItem("openai_api_key", key);
-    apiKeySection.classList.add("hidden");
-    attackInput.disabled = false;
-    attackSubmitBtn.disabled = false;
-    addChatMessage("API key saved! Ready for war.", "system");
-  } else {
-    addChatMessage("Invalid API key. Must start with sk-", "error");
-  }
 });
 
 // Add message to chat log
@@ -1737,70 +1709,40 @@ function addChatMessage(text, type = "system") {
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-// Parse attack command with GPT-3.5
+// Parse attack command via server-side API
 async function parseAttackCommand(userInput) {
-  if (!openaiApiKey) {
-    addChatMessage("Please enter your OpenAI API key first.", "error");
-    return null;
-  }
-  
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("/api/parse-attack", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${openaiApiKey}`
       },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `You parse attack commands. Extract the attacking country and all target countries from user input.
-The user may specify multiple targets separated by commas and/or "and" (e.g., "india attacks china, russia and afghanistan").
-Return ONLY a JSON array of attack commands like: [{"attacker": "Country Name", "target": "Country Name"}, ...]
-Use full official country names (e.g., "United States" not "USA", "Russia" not "USSR", "Afghanistan" not "Afghantitsan").
-If there is only one target, return an array with one object: [{"attacker": "Country Name", "target": "Country Name"}]
-If the input is not a valid attack command, return: {"error": "Invalid command"}`
-          },
-          {
-            role: "user",
-            content: userInput
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 300
-      })
+      body: JSON.stringify({ userInput }),
     });
     
+    const data = await response.json();
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || "API request failed");
+      throw new Error(data.error || "API request failed");
     }
     
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content || "";
-    
-    // Parse the JSON response
-    const parsed = JSON.parse(content);
-    
-    if (parsed.error) {
-      addChatMessage(parsed.error, "error");
+    if (data.error) {
+      addChatMessage(data.error, "error");
       return null;
     }
     
     // Ensure we return an array
-    if (Array.isArray(parsed)) {
-      return parsed;
-    } else if (parsed.attacker && parsed.target) {
+    if (Array.isArray(data)) {
+      return data;
+    } else if (data.attacker && data.target) {
       // Handle legacy single command format
-      return [parsed];
+      return [data];
     } else {
       addChatMessage("Invalid command format", "error");
       return null;
     }
   } catch (err) {
-    console.error("GPT API error:", err);
+    console.error("API error:", err);
     addChatMessage(`Error: ${err.message}`, "error");
     return null;
   }
