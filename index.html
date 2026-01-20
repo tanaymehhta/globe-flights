@@ -30,6 +30,37 @@
       </div>
     </div>
     <canvas id="globe"></canvas>
+    
+    <!-- Attack Chatbox -->
+    <div class="chatbox" id="chatbox">
+      <div class="chatbox-header">
+        <span>War Room</span>
+        <button id="chatbox-toggle" type="button" aria-label="Toggle chat">−</button>
+      </div>
+      <div class="chatbox-body">
+        <div class="api-key-section" id="api-key-section">
+          <input 
+            type="password" 
+            id="api-key-input" 
+            placeholder="Enter OpenAI API key..."
+            aria-label="OpenAI API key"
+          />
+          <button id="save-api-key" type="button">Save</button>
+        </div>
+        <div class="chat-log" id="chat-log"></div>
+        <form id="attack-form" class="attack-input">
+          <input 
+            type="text" 
+            id="attack-input" 
+            placeholder="e.g. USA attacks Russia"
+            aria-label="Attack command"
+            disabled
+          />
+          <button type="submit" disabled>⚔️</button>
+        </form>
+      </div>
+    </div>
+    
     <script type="importmap">
       {
         "imports": {
