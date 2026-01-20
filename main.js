@@ -1677,9 +1677,11 @@ async function parseAttackCommand(userInput) {
         messages: [
           {
             role: "system",
-            content: `You parse attack commands. Extract the attacking country and target country from user input.
-Return ONLY a JSON object like: {"attacker": "Country Name", "target": "Country Name"}
-Use full official country names (e.g., "United States" not "USA", "Russia" not "USSR").
+            content: `You parse attack commands. Extract the attacking country and all target countries from user input.
+The user may specify multiple targets separated by commas and/or "and" (e.g., "india attacks china, russia and afghanistan").
+Return ONLY a JSON array of attack commands like: [{"attacker": "Country Name", "target": "Country Name"}, ...]
+Use full official country names (e.g., "United States" not "USA", "Russia" not "USSR", "Afghanistan" not "Afghantitsan").
+If there is only one target, return an array with one object: [{"attacker": "Country Name", "target": "Country Name"}]
 If the input is not a valid attack command, return: {"error": "Invalid command"}`
           },
           {
@@ -1688,7 +1690,7 @@ If the input is not a valid attack command, return: {"error": "Invalid command"}
           }
         ],
         temperature: 0.1,
-        max_tokens: 100
+        max_tokens: 300
       })
     });
     
@@ -1708,7 +1710,16 @@ If the input is not a valid attack command, return: {"error": "Invalid command"}
       return null;
     }
     
-    return parsed;
+    // Ensure we return an array
+    if (Array.isArray(parsed)) {
+      return parsed;
+    } else if (parsed.attacker && parsed.target) {
+      // Handle legacy single command format
+      return [parsed];
+    } else {
+      addChatMessage("Invalid command format", "error");
+      return null;
+    }
   } catch (err) {
     console.error("GPT API error:", err);
     addChatMessage(`Error: ${err.message}`, "error");
@@ -1728,18 +1739,23 @@ attackForm?.addEventListener("submit", async (e) => {
   attackInput.disabled = true;
   attackSubmitBtn.disabled = true;
   
-  // Parse the command
-  const command = await parseAttackCommand(userInput);
+  // Parse the command(s) - now returns an array
+  const commands = await parseAttackCommand(userInput);
   
-  if (command && command.attacker && command.target) {
-    // Check if target is already destroyed
-    if (damagedCountries.has(command.target)) {
-      addChatMessage(`${command.target} is already destroyed!`, "error");
-    } else {
-      addChatMessage(`${command.attacker} is attacking ${command.target}...`, "attack");
-      
-      // Execute the attack
-      await executeAttack(command.attacker, command.target);
+  if (commands && Array.isArray(commands) && commands.length > 0) {
+    // Process all attack commands sequentially
+    for (const command of commands) {
+      if (command.attacker && command.target) {
+        // Check if target is already destroyed
+        if (damagedCountries.has(command.target)) {
+          addChatMessage(`${command.target} is already destroyed!`, "error");
+        } else {
+          addChatMessage(`${command.attacker} is attacking ${command.target}...`, "attack");
+          
+          // Execute the attack
+          await executeAttack(command.attacker, command.target);
+        }
+      }
     }
   }
   
