@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js";
+import { CONFIG } from "./config.js";
 
 const canvas = document.getElementById("globe");
 const statusEl = document.getElementById("status");
@@ -1615,7 +1616,7 @@ const attackInput = document.getElementById("attack-input");
 const attackSubmitBtn = attackForm?.querySelector("button");
 
 // API key storage
-let openaiApiKey = localStorage.getItem("openai_api_key") || "";
+let openaiApiKey = localStorage.getItem("openai_api_key") || CONFIG.OPENAI_API_KEY || "";
 
 // Initialize chatbox state
 function initChatbox() {
