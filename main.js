@@ -1,5 +1,8 @@
 import * as THREE from "three";
 import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js";
+import { CONFIG } from "./config.js";
+
+let openaiApiKey = localStorage.getItem("openai_api_key") || CONFIG.OPENAI_API_KEY || "";
 
 const canvas = document.getElementById("globe");
 const statusEl = document.getElementById("status");
